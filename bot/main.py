@@ -21,6 +21,8 @@ TFREGISTRATION = "Вы успешно зарегистрированны! Ваш
 FEEDBACK = "Если у вас есть какие-то комментарии или замечания к нашей работе, пожалуйста оставьте их ниже"
 TFFEEDBACK = "Спасибо! В ближайшее время мы ознакомимся с фидбэком. В случае необходимости обратиться в клиентскую поддержку, пишите на почту vkusnicofi@mail.ru"
 
+data_path = 'bot\\data.json'
+open_file_mode = 'r+'
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -60,6 +62,7 @@ def get_phone(message):
     if message.text[0] == "+":
         bot.send_message(text=TFREGISTRATION, chat_id=message.chat.id)
         bot.send_animation(message.chat.id, get_random_gif())
+
     else:
         bot.send_message(
             text="Некорректные данные, попробуйте ещё раз", chat_id=message.chat.id
