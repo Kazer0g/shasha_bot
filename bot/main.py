@@ -3,6 +3,7 @@ import telebot
 from src import TOKEN, GIPHYTOKEN # Импорт файла с токенами (бота и giphy)
 
 import json
+import random
 # Зададим текст сообщений бота через константы
 GREETINGS = "Здравствуйте"
 COMMANDS = """
@@ -17,12 +18,9 @@ LOCATION = [55.7610151, 37.4748494, "Описание местположения
 FAQ = "Здесь будет просто текст"
 NAME = "Чтобы получить скидку 5% неоюходимо зарегистрироваться. Введите своё имя"
 NUMBER = "Введите свой номер телефона в формате +7XXXXXXXXXX"
-TFREGISTRATION = "Вы успешно зарегистрированны! Ваша гифка на скидку:"
+TFREGISTRATION = f"Вы успешно зарегистрированны! Ваш код на скидку:{random.randint(1000, 10000)}"
 FEEDBACK = "Если у вас есть какие-то комментарии или замечания к нашей работе, пожалуйста оставьте их ниже"
 TFFEEDBACK = "Спасибо! В ближайшее время мы ознакомимся с фидбэком. В случае необходимости обратиться в клиентскую поддержку, пишите на почту vkusnicofi@mail.ru"
-
-data_path = 'bot\\data.json'
-open_file_mode = 'r+'
 
 bot = telebot.TeleBot(TOKEN)
 
@@ -44,9 +42,12 @@ def discount_handler(message):
 
 # Получение имени и запрос номера телефана или повторный запрос имени
 def get_name(message):
+    global client
     print(message.text)
     # Проверка имени на валидность
     if message.text[0] != "/":
+        client = {"id": message.from_user.id, "name": message.text}
+        print (client)
         bot.send_message(text=NUMBER, chat_id=message.chat.id)
         bot.register_next_step_handler(message, get_phone)
     else:
@@ -55,19 +56,30 @@ def get_name(message):
         )
         bot.register_next_step_handler(message, get_name)
 
+
 # Получение номера телефона и отправка случайной гиф или повторный запрос номера телефона
 def get_phone(message):
     print(message.text)
     # Проверка номера телефона на валидность
     if message.text[0] == "+":
         bot.send_message(text=TFREGISTRATION, chat_id=message.chat.id)
+        client["phone"] = message.text
+        print (client)
+        # Загружаем уже известные данные
+        with open('bot\\data.txt') as f:
+            data = json.load(f)
+        data.append(client)
+        with open('bot\\data.txt', "w") as f:
+            json.dump(data, f)
+            print("Данные обновлены")
         bot.send_animation(message.chat.id, get_random_gif())
-
     else:
         bot.send_message(
             text="Некорректные данные, попробуйте ещё раз", chat_id=message.chat.id
         )
         bot.register_next_step_handler(message, get_phone)
+
+
 
 # Получение случайной gif
 def get_random_gif():
